@@ -1,21 +1,33 @@
 import React, { Component } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, Redirect } from 'react-router-dom';
 import axios from 'axios';
+import Cookies from 'universal-cookie';
 
 import Header from './Header';
 
+const cookies = new Cookies();
+
 class List extends Component {
     state = {
-        products: []
+        products: [],
+        login: false
     }
 
     componentWillMount(){
+        if (cookies.get('jwtToken')) this.setState({login: true});
+
         axios.get('http://localhost:3001/product')
         .then((result) => {
             this.setState({
                 products: result.data
             })
         })
+    }
+
+    loginRedirect = () => {
+        if (!this.state.login) {
+          return <Redirect to='/login' />
+        }
     }
 
     delete_product(product_id){
@@ -27,7 +39,7 @@ class List extends Component {
         }).catch(function(err){
             console.log(err);
         });
-      }
+    }
 
     render() {
         const styles = {
@@ -48,6 +60,7 @@ class List extends Component {
         })          
         return (
             <div>
+                {this.loginRedirect()}
                 <Header />
                 <table>
                     <tr>

@@ -1,14 +1,28 @@
 import React, { Component } from 'react';
 import { Redirect } from 'react-router-dom';
 import axios from 'axios';
+import Cookies from 'universal-cookie';
 
 import Header from './Header';
+
+const cookies = new Cookies();
 
 class Add extends Component {
   state = {
     selectedFile: null,
-    redirect: false
+    redirect: false,
+    login: false
   };
+
+  componentWillMount(){
+    if (cookies.get('jwtToken')) this.setState({login: true});
+  }
+
+  loginRedirect = () => {
+    if (!this.state.login) {
+      return <Redirect to='/login' />
+    }
+  }
 
   onFileChange = event => { 
     this.setState({ selectedFile: event.target.files[0] });
@@ -23,7 +37,7 @@ class Add extends Component {
     formData.append('description', refs.description.value);
     formData.append("product_image", this.state.selectedFile);
 
-    axios.put('http://localhost:3001/product/add', formData, {
+    axios.post('http://localhost:3001/product/add', formData, {
     }).then(function(response){
         console.log(response.data);
         document.getElementById("simple-form").reset();
@@ -43,6 +57,7 @@ class Add extends Component {
   render() {
     return (
         <div>
+            {this.loginRedirect()}
             {this.renderRedirect()}
             <Header />
             <form id="simple-form" action="#">

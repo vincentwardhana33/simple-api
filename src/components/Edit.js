@@ -1,26 +1,38 @@
 import React, { Component } from 'react';
 import { Redirect } from 'react-router-dom';
 import axios from 'axios';
+import Cookies from 'universal-cookie';
 
 import Header from './Header';
+
+const cookies = new Cookies();
 
 class Edit extends Component {
   state = {
     selectedFile: null,
     redirect: false,
-    product: {}
+    product: {},
+    login: false
   };
 
-    componentWillMount(){
-        const { match: { params } } = this.props;
+  componentWillMount(){
+    if (cookies.get('jwtToken')) this.setState({login: true});
 
-        axios.get(`http://localhost:3001/product/${params.product_id}`)
-        .then((result) => {
-            this.setState({
-                product: result.data
-            })
+    const { match: { params } } = this.props;
+
+    axios.get(`http://localhost:3001/product/${params.product_id}`)
+    .then((result) => {
+        this.setState({
+            product: result.data
         })
+    })
+  }
+
+  loginRedirect = () => {
+    if (!this.state.login) {
+      return <Redirect to='/login' />
     }
+  }
 
   onFileChange = event => { 
     this.setState({ selectedFile: event.target.files[0] });
@@ -57,6 +69,7 @@ class Edit extends Component {
   render() {
         return (
             <div>
+                {this.loginRedirect()}
                 {this.renderRedirect()}
                 <Header />
                 <form id="simple-form" action="#">
